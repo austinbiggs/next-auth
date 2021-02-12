@@ -1,5 +1,6 @@
 import NextAuth from "next-auth"
 import Providers from "next-auth/providers"
+import jwt from "jsonwebtoken";
 
 // For more information on each option (and a full list of options) go to
 // https://next-auth.js.org/configuration/options
@@ -17,7 +18,7 @@ export default NextAuth({
   // Notes:
   // * You must to install an appropriate node_module for your database
   // * The Email provider requires a database (OAuth providers do not)
-  database: process.env.DATABASE_URL,
+  // database: process.env.DATABASE_URL,
 
   // The secret should be set to a reasonably long random string.
   // It is used to sign cookies and to sign and encrypt JSON Web Tokens, unless
@@ -44,14 +45,14 @@ export default NextAuth({
   // https://next-auth.js.org/configuration/options#jwt
   jwt: {
     // A secret to use for key generation (you should set this explicitly)
-    // secret: 'INp8IvdIyeMcoGAgFGoA61DdBglwwSqnXJZkgz8PSnw',
+    secret: process.env.SECRET,
     // Set to true to use encryption (default: false)
     // encryption: true,
     // You can define your own encode/decode functions for signing and encryption
     // if you want to override the default behaviour.
     encode: async ({ secret, token, maxAge }) => {
       const jwtClaims = {
-        "sub": token.id.toString() ,
+        "sub": token?.id.toString() ,
         "name": token.name ,
         "email": token.email,
         "iat": Date.now() / 1000,
@@ -100,9 +101,9 @@ export default NextAuth({
       const isUserSignedIn = user ? true : false;
       // make a http call to our graphql api
       // store this in postgres
-
       if(isUserSignedIn) {
-        token.id = user.id.toString();
+        console.log({user, token});
+        token.id = user?.id.toString();
       }
       return Promise.resolve(token);
     }
@@ -113,5 +114,5 @@ export default NextAuth({
   events: {},
 
   // Enable debug messages in the console if you are having problems
-  debug: false,
+  debug: true,
 })
